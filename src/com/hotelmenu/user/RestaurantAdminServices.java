@@ -7,7 +7,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 public class RestaurantAdminServices extends MySqlDbConnection {
-    private String restaurantId;
+    private int restaurantId;
     private String restaurantUname;
     private String restaurantName;
     private String password;
@@ -82,21 +82,25 @@ public class RestaurantAdminServices extends MySqlDbConnection {
         this.emailDisplay = emailDisplay;
     }
 
-    public String getRestaurantId() {
+    public int getRestaurantId() {
         return restaurantId;
     }
 
+    public void setRestaurantId(String restaurantId) { this.restaurantId = Integer.parseInt(restaurantId); }
 
-    public String showMenuItems() {
+
+    public String getRestaurantCredentials() {
         JSONArray json_arr = new JSONArray();
         ResultSet rs = null;
+        String SQL = "SELECT email,password FROM hotelmenu_database WHERE restairant_uname=?";
         try {
-            rs = stmt.executeQuery("select * from menuitems");
+            prepStmt = con.prepareStatement(SQL);
+            prepStmt.setString(1,restaurantUname);
+            rs = prepStmt.executeQuery();
             while (rs.next()) {
                 JSONObject json = new JSONObject();
-                json.put("id", rs.getInt(1));
-                json.put("username", rs.getString(2));
-                json.put("email", rs.getString(3));
+                json.put("email", rs.getString("email"));
+                json.put("password", rs.getString("password"));
                 json_arr.put(json);
             }
         } catch (SQLException e) {

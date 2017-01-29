@@ -3,8 +3,6 @@
     pageEncoding="ISO-8859-1"%>
 
 	<%
-		MySqlDbConnection mydb = new MySqlDbConnection();
-		String xx = mydb.connectDB();
-		
-		out.print(xx);
+		String s = "hello world";
+		out.print(s);
 	%>

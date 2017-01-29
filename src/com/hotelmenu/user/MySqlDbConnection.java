@@ -2,15 +2,13 @@ package com.hotelmenu.user;
 
 import java.sql.*;
 
-import org.json.JSONArray;
-import org.json.JSONObject;
-
 public class MySqlDbConnection {
 
-    Statement stmt;
     Connection con;
+    Statement stmt;
+    PreparedStatement prepStmt;
 
-    public void connectDB() {
+    public String connectDB() {
 
 
         try {
@@ -23,6 +21,7 @@ public class MySqlDbConnection {
         } catch (Exception e) {
             System.out.println(e);
         }
+        return null;
     }
 
     public void disconnectDB() {
