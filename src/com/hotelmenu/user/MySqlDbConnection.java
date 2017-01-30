@@ -9,8 +9,6 @@ public class MySqlDbConnection {
     PreparedStatement prepStmt;
 
     public String connectDB() {
-
-
         try {
             Class.forName("com.mysql.jdbc.Driver");
             String connectionStr = "jdbc:mysql://hotelmenudatabase.cbnhjzempwyk.us-west-2.rds.amazonaws.com:3306/hotelmenu_database";
