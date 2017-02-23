@@ -1,13 +1,21 @@
-package com.hotelmenu.user;
+package com.restaurantmenu.user;
 
+import com.restaurantmenu.configuration.Constance;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.impl.compression.CompressionCodecs;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.security.crypto.bcrypt.BCrypt;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.time.LocalDate;
+import java.util.Calendar;
+import java.util.Date;
 
-public class RestaurantAdminServices extends MySqlDbConnection {
+
+public class RestaurantAdmin extends MySqlDbConnection {
     private int restaurantId;
     private String restaurantUname;
     private String restaurantName;
@@ -20,9 +28,11 @@ public class RestaurantAdminServices extends MySqlDbConnection {
 
     private int HTTPStatusCode;
 
+    private ResponseHandle responseHandle;
+
 
     //initialize connection to database from super class
-    public RestaurantAdminServices() {
+    public RestaurantAdmin() {
         this.connectDB();
     }
 
@@ -102,7 +112,7 @@ public class RestaurantAdminServices extends MySqlDbConnection {
         return HTTPStatusCode;
     }
 
-    public String getRestaurantCredentials() {
+    public String loginRestaurantAdmin() {
         JSONArray json_arr = new JSONArray();
         ResultSet rs = null;
         String SQL = "SELECT password FROM restaurant_admins WHERE restaurant_uname=?";
@@ -113,21 +123,32 @@ public class RestaurantAdminServices extends MySqlDbConnection {
             rs = prepStmt.executeQuery();
             if (!rs.isBeforeFirst()) {
                 //if the restaurant_uname is incorrect it will not be authenticated
-                JSONObject json = new JSONObject();
-                json.put("authenticated", false);
-                json_arr.put(json);
+                responseHandle = new ResponseHandle("authentication", "authentication failed", "username or password incorrect");
+                json_arr.put(responseHandle.getResponseJSON());
                 HTTPStatusCode = 401;
             } else {
                 while (rs.next()) {
-                    JSONObject json = new JSONObject();
                     if (BCrypt.checkpw(password, rs.getString(1))) {
-                        json.put("authenticated", true);
+
+                        String tokenJJWT = Jwts.builder()
+                                .compressWith(CompressionCodecs.DEFLATE)
+                                .setIssuer("Login for Restaurant Admin")
+                                .claim("username",restaurantUname)
+                                .setIssuedAt(new Date())
+                                .setExpiration(new Date(new Date().getTime()+7*24*60*60*1000)) //set expiration to week
+                                .signWith(SignatureAlgorithm.HS512, Constance.AUTHORIZATION_PASSWORD)
+                                .compact();
+
+                        JSONObject contentJson = new JSONObject();
+                        contentJson.put("token", tokenJJWT);
+
+                        responseHandle = new ResponseHandle("authentication", "authentication success", contentJson);
                         HTTPStatusCode = 200;
                     } else {
-                        json.put("authenticated", false);
+                        responseHandle = new ResponseHandle("authentication", "authentication failed", "username or password incorrect");
                         HTTPStatusCode = 401;
                     }
-                    json_arr.put(json);
+                    json_arr.put(responseHandle.getResponseJSON());
                 }
             }
         } catch (SQLException e) {
@@ -148,16 +169,13 @@ public class RestaurantAdminServices extends MySqlDbConnection {
 
     public String registerRestaurantAdmin() {
         JSONArray json_arr = new JSONArray();
-        JSONObject json = new JSONObject();
         if (isEmailAlreadyExists()) {
-            json.put("registered-successfully", false);
-            json.put("email-already-exists", true);
-            json_arr.put(json);
+            responseHandle = new ResponseHandle("registration", "registration failed", "email already exists");
+            json_arr.put(responseHandle.getResponseJSON());
             HTTPStatusCode = 403;
         } else if (isUsernameAlreadyExists()) {
-            json.put("registered-successfully", false);
-            json.put("username-already-exists", true);
-            json_arr.put(json);
+            responseHandle = new ResponseHandle("registration", "registration failed", "username already exists");
+            json_arr.put(responseHandle.getResponseJSON());
             HTTPStatusCode = 403;
         } else {
             String SQL = "INSERT INTO `restaurant_admins`(`restaurant_uname`, `restaurant_name`, `password`, `email`, `admin_fname`, `admin_lname`, `contact_to_display`, `email_to_display`) VALUES (?,?,?,?,?,?,?,?)";
@@ -165,7 +183,7 @@ public class RestaurantAdminServices extends MySqlDbConnection {
                 prepStmt = con.prepareStatement(SQL);
                 prepStmt.setString(1, restaurantUname);
                 prepStmt.setString(2, restaurantName);
-                prepStmt.setString(3, BCrypt.hashpw(password,BCrypt.gensalt())); //encrypting password
+                prepStmt.setString(3, BCrypt.hashpw(password, BCrypt.gensalt())); //encrypting password
                 prepStmt.setString(4, email);
                 prepStmt.setString(5, adminFname);
                 prepStmt.setString(6, adminLname);
@@ -173,13 +191,13 @@ public class RestaurantAdminServices extends MySqlDbConnection {
                 prepStmt.setString(8, emailDisplay);
 
                 prepStmt.executeUpdate();
-                json.put("registered-successfully", true);
-                json_arr.put(json);
+                responseHandle = new ResponseHandle("registration", "registration success", "");
+                json_arr.put(responseHandle.getResponseJSON());
                 HTTPStatusCode = 201;
             } catch (SQLException e) {
                 e.printStackTrace();
-                json.put("registered-successfully", false);
-                json_arr.put(json);
+                responseHandle = new ResponseHandle("registration", "registration failed", "");
+                json_arr.put(responseHandle.getResponseJSON());
                 HTTPStatusCode = 403;
             } catch (Exception e) {
                 e.printStackTrace();

@@ -1,4 +1,4 @@
-package com.hotelmenu.user;
+package com.restaurantmenu.user;
 
 import java.sql.*;
 
@@ -13,6 +13,9 @@ public class MySqlDbConnection {
             Class.forName("com.mysql.jdbc.Driver");
             String connectionStr = "jdbc:mysql://hotelmenudatabase.cbnhjzempwyk.us-west-2.rds.amazonaws.com:3306/hotelmenu_database";
             con = DriverManager.getConnection(connectionStr, "samintha", "x455ldasus");
+
+//            String connectionStr = "jdbc:mysql://localhost:3307/hotelmenu_dblocal?useSSL=true";
+//            con = DriverManager.getConnection(connectionStr, "root", "");
             stmt = con.createStatement();
         } catch (SQLException e) {
             e.printStackTrace();

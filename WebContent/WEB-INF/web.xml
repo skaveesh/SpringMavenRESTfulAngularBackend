@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <web-app xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://xmlns.jcp.org/xml/ns/javaee" xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee http://xmlns.jcp.org/xml/ns/javaee/web-app_3_1.xsd" version="3.1">
-  <display-name>Spring Restful Angular Backend</display-name>
+  <display-name>Restaurant Menu Backend</display-name>
   <welcome-file-list>
     <welcome-file>index.html</welcome-file>
     <welcome-file>index.htm</welcome-file>
@@ -14,11 +14,21 @@
     <servlet-class>org.glassfish.jersey.servlet.ServletContainer</servlet-class>
     <init-param>
       <param-name>jersey.config.server.provider.packages</param-name>
-      <param-value>com.hotelmenu.user</param-value>
+      <param-value>com.restaurantmenu</param-value>
     </init-param>
   </servlet>
   <servlet-mapping>
     <servlet-name>Jersey</servlet-name>
-    <url-pattern>/backend/*</url-pattern>
+    <url-pattern>/bend/*</url-pattern>
   </servlet-mapping>
+  <security-constraint>
+    <web-resource-collection>
+      <web-resource-name>RestaurantAdminLogin</web-resource-name>
+      <url-pattern>/bend/restaurantadmin/service/login</url-pattern>
+      <http-method>POST</http-method>
+    </web-resource-collection>
+    <user-data-constraint>
+      <transport-guarantee>NONE</transport-guarantee>
+    </user-data-constraint>
+  </security-constraint>
 </web-app>
