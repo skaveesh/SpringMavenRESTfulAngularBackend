@@ -1,4 +1,4 @@
-package com.restaurantmenu.user;
+package com.restaurantmenu.responsehandle;
 
 import org.json.JSONObject;
 

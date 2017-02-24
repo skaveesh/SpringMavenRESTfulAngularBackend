@@ -1,6 +1,8 @@
 package com.restaurantmenu.user;
 
 import com.restaurantmenu.configuration.Constance;
+import com.restaurantmenu.responsehandle.ResponseHandle;
+import com.restaurantmenu.restaurant.Restaurant;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.impl.compression.CompressionCodecs;
@@ -10,15 +12,12 @@ import org.springframework.security.crypto.bcrypt.BCrypt;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.time.LocalDate;
-import java.util.Calendar;
 import java.util.Date;
 
 
-public class RestaurantAdmin extends MySqlDbConnection {
+public class RestaurantAdmin extends Restaurant {
+
     private int restaurantId;
-    private String restaurantUname;
-    private String restaurantName;
     private String password;
     private String email;
     private String adminFname;
@@ -26,22 +25,19 @@ public class RestaurantAdmin extends MySqlDbConnection {
     private String contatctDisplay;
     private String emailDisplay;
 
-    private int HTTPStatusCode;
-
-    private ResponseHandle responseHandle;
-
-
     //initialize connection to database from super class
-    public RestaurantAdmin() {
+    public RestaurantAdmin(String restaurantUname) {
         this.connectDB();
+        this.restaurantUname = restaurantUname;
+        setRestaurantIDFromUname("SELECT restaurant_id FROM restaurant_admins WHERE restaurant_uname=? LIMIT 1",this.restaurantUname);
     }
 
     public String getRestaurantUname() {
         return restaurantUname;
     }
 
-    public void setRestaurantUname(String restaurantUname) {
-        this.restaurantUname = restaurantUname;
+    public void setRestaurantUname() {
+
     }
 
     public String getRestaurantName() {
@@ -108,9 +104,6 @@ public class RestaurantAdmin extends MySqlDbConnection {
         this.restaurantId = Integer.parseInt(restaurantId);
     }
 
-    public int getHTTPStatusCode() {
-        return HTTPStatusCode;
-    }
 
     public String loginRestaurantAdmin() {
         JSONArray json_arr = new JSONArray();
@@ -140,7 +133,7 @@ public class RestaurantAdmin extends MySqlDbConnection {
                                 .compact();
 
                         JSONObject contentJson = new JSONObject();
-                        contentJson.put("token", tokenJJWT);
+                        contentJson.put("auth_token", tokenJJWT);
 
                         responseHandle = new ResponseHandle("authentication", "authentication success", contentJson);
                         HTTPStatusCode = 200;
@@ -169,11 +162,11 @@ public class RestaurantAdmin extends MySqlDbConnection {
 
     public String registerRestaurantAdmin() {
         JSONArray json_arr = new JSONArray();
-        if (isEmailAlreadyExists()) {
+        if (isAlreadyExists("SELECT * FROM restaurant_admins WHERE restaurant_uname=? LIMIT 1",restaurantUname)) {
             responseHandle = new ResponseHandle("registration", "registration failed", "email already exists");
             json_arr.put(responseHandle.getResponseJSON());
             HTTPStatusCode = 403;
-        } else if (isUsernameAlreadyExists()) {
+        } else if (isAlreadyExists("SELECT * FROM restaurant_admins WHERE email=? LIMIT 1", email)) {
             responseHandle = new ResponseHandle("registration", "registration failed", "username already exists");
             json_arr.put(responseHandle.getResponseJSON());
             HTTPStatusCode = 403;
@@ -206,41 +199,13 @@ public class RestaurantAdmin extends MySqlDbConnection {
         return json_arr.toString();
     }
 
-    public boolean isUsernameAlreadyExists() {
+    private boolean isAlreadyExists(String SQLQuery, String valueToCheck) {
         boolean alreadyExists = false;
 
         ResultSet rs = null;
-        String SQL = "SELECT * FROM restaurant_admins WHERE restaurant_uname=? LIMIT 1";
         try {
-            prepStmt = con.prepareStatement(SQL);
-            prepStmt.setString(1, restaurantUname);
-
-            rs = prepStmt.executeQuery();
-            alreadyExists = ((!rs.isBeforeFirst()) ? false : true);
-        } catch (SQLException e) {
-            e.printStackTrace();
-        } catch (Exception e) {
-            e.printStackTrace();
-        } finally {
-            try {
-                if (rs != null) {
-                    rs.close();
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
-        return alreadyExists;
-    }
-
-    public boolean isEmailAlreadyExists() {
-        boolean alreadyExists = false;
-
-        ResultSet rs = null;
-        String SQL = "SELECT * FROM restaurant_admins WHERE email=? LIMIT 1";
-        try {
-            prepStmt = con.prepareStatement(SQL);
-            prepStmt.setString(1, email);
+            prepStmt = con.prepareStatement(SQLQuery);
+            prepStmt.setString(1, valueToCheck);
 
             rs = prepStmt.executeQuery();
             alreadyExists = ((!rs.isBeforeFirst()) ? false : true);

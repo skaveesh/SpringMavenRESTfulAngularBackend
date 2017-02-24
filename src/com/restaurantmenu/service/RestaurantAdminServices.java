@@ -24,8 +24,7 @@ public class RestaurantAdminServices {
     public Response loginRestaurantAdmin(@FormParam("username") String userName,
                                          @FormParam("password") String userPass){
 
-        RestaurantAdmin restAdminSrvLogin = new RestaurantAdmin();
-        restAdminSrvLogin.setRestaurantUname(userName);
+        RestaurantAdmin restAdminSrvLogin = new RestaurantAdmin(userName);
         restAdminSrvLogin.setPassword(userPass);
 
         String returnStr = restAdminSrvLogin.loginRestaurantAdmin();
@@ -54,8 +53,7 @@ public class RestaurantAdminServices {
                                             @FormParam("emailToDisplay") String emailToDisplay){
 
 
-        RestaurantAdmin restAdminSrvRegister = new RestaurantAdmin();
-        restAdminSrvRegister.setRestaurantUname(userName);
+        RestaurantAdmin restAdminSrvRegister = new RestaurantAdmin(userName);
         restAdminSrvRegister.setRestaurantName(restaurantName);
         restAdminSrvRegister.setPassword(password);
         restAdminSrvRegister.setEmail(email);
