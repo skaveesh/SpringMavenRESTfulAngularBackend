@@ -16,6 +16,13 @@ public class ResponseHandle {
         this.reason = reason;
     }
 
+    public ResponseHandle(){
+        //server error message
+        this.message = "server error";
+        this.content = "server side error";
+        this.reason = "";
+    }
+
     public JSONObject getResponseJSON(){
         JSONObject errorObject = new JSONObject();
 

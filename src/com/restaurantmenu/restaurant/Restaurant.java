@@ -15,7 +15,8 @@ public class Restaurant extends MySqlDbConnection {
 
     protected String restaurantUname;
     protected String restaurantName;
-    protected int restaurantID;
+    protected String token;
+    protected int restaurantID = -1;
     protected int HTTPStatusCode;
     protected ResponseHandle responseHandle;
 
@@ -35,12 +36,15 @@ public class Restaurant extends MySqlDbConnection {
         this.restaurantID = restaurantID;
     }
 
+    public void setToken(String token) {
+        this.token = token;
+    }
+
     public int getHTTPStatusCode() {
         return HTTPStatusCode;
     }
 
     protected void setRestaurantIDFromUname(String SQLQuery, String Uname) {
-        int restaurtID = -1;
         ResultSet rs = null;
         try {
             prepStmt = con.prepareStatement(SQLQuery);
@@ -48,9 +52,35 @@ public class Restaurant extends MySqlDbConnection {
 
             rs = prepStmt.executeQuery();
             while (rs.next()) {
-                restaurtID = rs.getInt(1);
+                this.restaurantID  = rs.getInt(1);
             }
-            this.restaurantID = restaurtID;
+            setRestaurantUnameFromRestaurantID();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                if (rs != null) {
+                    rs.close();
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    protected void setRestaurantUnameFromRestaurantID(){
+        ResultSet rs = null;
+        String SQLQuery = "SELECT restaurant_uname FROM restaurant_admins WHERE restaurant_id=? LIMIT 1";
+        try {
+            prepStmt = con.prepareStatement(SQLQuery);
+            prepStmt.setInt(1, restaurantID);
+
+            rs = prepStmt.executeQuery();
+            while (rs.next()) {
+                this.restaurantUname  = rs.getString(1);
+            }
         } catch (SQLException e) {
             e.printStackTrace();
         } catch (Exception e) {
