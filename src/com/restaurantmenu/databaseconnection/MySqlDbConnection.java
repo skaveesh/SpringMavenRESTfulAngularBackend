@@ -11,8 +11,6 @@ public class MySqlDbConnection {
     protected String connectDB() {
         try {
             Class.forName("com.mysql.jdbc.Driver");
-//            String connectionStr = "jdbc:mysql://hotelmenudatabase.cbnhjzempwyk.us-west-2.rds.amazonaws.com:3306/hotelmenu_database";
-//            con = DriverManager.getConnection(connectionStr, "samintha", "x455ldasus");
 
             String connectionStr = "jdbc:mysql://localhost:3307/hotelmenu_dblocal?useSSL=true";
             con = DriverManager.getConnection(connectionStr, "root", "");
